@@ -1,0 +1,55 @@
+# Moc Commands
+	if ($message[0] eq "～おんがく") {
+		my $info = "";
+		if (`ps -C mocp` =~ /mocp/) {
+			if ($message[1] eq "volume") {
+					if ($ID eq $opkey) {
+						$info = `mocp -v $message[2]`;
+						print $info;
+						$self->notice("$channel","Volume set to $message[2]%"); }
+					if ($ID ne $opkey) { $self->privmsg("$channel","Authorization required."); }
+			}
+			elsif ($message[1] eq "next") {
+					if ($ID eq $opkey) {
+						$info = `mocp -f`;
+						print $info;
+						$self->notice("$channel","Skipping to next song."); }
+					if ($ID ne $opkey) { $self->privmsg("$channel","Authorization required."); }
+			}
+			elsif ($message[1] eq "prev") {
+					if ($ID eq $opkey) {
+						$info = `mocp -r`;
+						print $info;
+						$self->notice("$channel","Playing previous song."); }
+					if ($ID ne $opkey) { $self->privmsg("$channel","Authorization required."); }
+			}
+			elsif ($message[1] eq "play") {
+					if ($ID eq $opkey) {
+						$info = `mocp -U`;
+						print $info;
+						$self->notice("$channel","Resuming song."); }
+					if ($ID ne $opkey) { $self->privmsg("$channel","Authorization required."); }
+			}
+			elsif ($message[1] eq "pause") {
+					if ($ID eq $opkey) {
+						$info = `mocp -P`;
+						print $info;
+						$self->notice("$channel","Pausing song."); }
+					if ($ID ne $opkey) { $self->privmsg("$channel","Authorization required."); }
+			}
+			else {
+				sleep 1;
+				my $mocp = `mocp -i`;
+				$mocp =~ /^State: (.*)$/m;
+				my $state = $1;
+				$mocp =~ /.*Title: (.*).*/;
+				my $title = $1;
+				$mocp =~ /.*TotalTime: (.*).*/;
+				my $totaltime = $1;
+				$mocp =~ /.*CurrentTime: (.*).*/;
+				my $currenttime = $1;
+				if ($state eq '' || $state eq 'STOP') { $self->notice("$channel","MOC is not playing."); }
+				else { $self->notice("$channel","Listening to: $title [$totaltime]"); }
+			}
+		}
+	}

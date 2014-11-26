@@ -1,0 +1,41 @@
+	if ($message[0] eq "~auth") {
+		if ($user ~~ @admins) { $self->notice("$channel","$nick is admin."); }
+		else { $self->notice("$channel","$nick is not admin."); }
+	}
+	if ($message[0] eq "~op") {
+		if ($user ~~ @admins) { $self->mode("$channel","+o","$message[1]"); }
+		else { $self->notice("$channel","Admin is required for this command."); }
+	}
+	if ($message[0] eq "~deop") {
+		if ($user ~~ @admins) { $self->mode("$channel","-o","$message[1]"); }
+		else { $self->notice("$channel","Admin is required for this command."); }
+	}
+	if ($message[0] eq "~voice") {
+		if ($user ~~ @admins) { $self->mode("$channel","+v","$message[1]"); }
+		else { $self->notice("$channel","Admin is required for this command."); }
+	}
+	if ($message[0] eq "~devoice") {
+		if ($user ~~ @admins) { $self->mode("$channel","-v","$message[1]"); }
+		else { $self->notice("$channel","Admin is required for this command."); }
+	}
+	if ($message[0] eq "~kick") {
+		if ($user ~~ @admins) { $self->kick("$channel","$message[1]","You've been Judged."); }
+		else { $self->notice("$channel","Admin is required for this command."); }
+	}
+	if ($message[0] eq "～しね") { # write up a way of using the unique key's for this.			
+		if ($ID eq $opkey) { $self->quit("Leaving"); }
+		if ($ID ne $opkey) { $self->privmsg("$nick","Authorization required for kill."); }
+	}
+	if ($message[0] eq "~admin") {
+		if ($message[1] eq "add") {
+			push @admins, $message[2];
+			$self->privmsg("$channel","Added Admin: $message[2]");
+		}
+		elsif ($message[1] eq "del") {
+			pop @admins;
+			$self->privmsg("$channel","Removed Admin: $message[2]");
+		}
+		else {
+			$self->privmsg("$channel","Admins: @admins");
+		}
+	}

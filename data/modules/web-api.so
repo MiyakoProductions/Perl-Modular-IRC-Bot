@@ -1,0 +1,89 @@
+my $api_login = "";
+my $api_key = "3";
+
+	if ($message[0] eq "~anime") {
+		my $url = "http://www.animeseason.com/anime-list/random/";
+		my $m = WWW::Mechanize->new();
+		$m->get($url);
+		my $uri = $m->uri;
+		my $title = $m->title;
+		$self->privmsg("$channel","$title - $uri");
+	}
+	if ($message[0] eq "~vn") {
+		my $url = "http://vndb.org/v/rand";
+		my $m = WWW::Mechanize->new();
+		$m->get($url);
+		my $uri = $m->uri;
+		my $title = $m->title;
+		$self->privmsg("$channel","$title - $uri");
+	}
+	if ($message[0] eq "~nico"){
+		shift(@message);
+		my $regex = join(" ", @message);
+		my $client = WWW::Mechanize->new(agent => "\x4d\x6f\x7a\x69\x6c\x6c\x61\x2f\x35\x2e\x30\x20\x46\x69\x72\x65\x66\x6f\x78\x2f\x33\x2e\x35\x2e\x31\x36");
+		$client->get("http://www.nicovideo.jp/search/$regex");
+		my $tree = HTML::TreeBuilder->new;
+		$tree->parse($client->content);
+		$tree->elementify();
+		my @elements = $tree->find("div");
+		my $limit = 3;
+		my $i = 1;
+		foreach(@elements)
+		{
+			my $ref = $_->attr('data-id');
+        	my $class = $_->attr('class');
+			if($class eq "itemThumb") {
+				$self->privmsg("$channel","http://www.nicovideo.jp/watch/$ref");
+				$i++;
+        	}
+        	if ($i > $limit) {last;}
+		}
+	}
+	if ($message[0] eq "~konachan"){
+		
+		shift(@message);
+		my $regex = join("+", @message);
+		$self->privmsg("$nick","-=[ Results ]=-");
+		my $client = WWW::Mechanize->new(agent => "\x4d\x6f\x7a\x69\x6c\x6c\x61\x2f\x35\x2e\x30\x20\x46\x69\x72\x65\x66\x6f\x78\x2f\x33\x2e\x35\x2e\x31\x36");
+		my $lower=1;
+		my $upper=10;
+		my $pages = int(rand( $upper-$lower+1 ) ) + $lower;
+		$client->get("\x68\x74\x74\x70\x3a\x2f\x2f\x6b\x6f\x6e\x61\x63\x68\x61\x6e\x2e\x63\x6f\x6d\x2f\x70\x6f\x73\x74\x3f\x6c\x69\x6d\x69\x74\x3d\x31\x30\x26\x70\x61\x67\x65\x3d$pages\x26\x74\x61\x67\x73\x3d$regex");
+		my $tree = HTML::TreeBuilder->new;
+		$tree->parse($client->content);
+		$tree->elementify();
+		my @elements = $tree->find("a");
+		my $limit = 3;
+		my $i = 1;
+		foreach(@elements)
+		{
+			my $ref = $_->attr('href');
+			my $class = $_->attr('class');
+			if($class eq "thumb") {
+				$self->privmsg("$nick","\x68\x74\x74\x70\x3a\x2f\x2f\x6b\x6f\x6e\x61\x63\x68\x61\x6e\x2e\x63\x6f\x6d$ref");
+				$i++;
+        	}
+        	if ($i > $limit) {last;}
+		}
+		$self->privmsg("$nick","-=[ EOF ]=-");
+	}
+	if ($message[0] eq "~url"){
+		my $eurl = uri_escape($message[1]);
+		my $lurl = "https://api-ssl.bitly.com/shorten?access_token=$api_key&longUrl=$eurl";
+		shift(@message);
+		shift(@message);
+		my $desc = join(" ", @message);
+		my $m = WWW::Mechanize->new();
+		$m->get($lurl);
+		my $c = $m->content;
+		foreach my $line (split(/\n/,$c))
+		{
+			if ($line =~ m/shortURL/i)
+			{
+				my @url_bitly = split(/([{}\s\"])shortUrl/,$line);
+				@url_bitly = split(/\"/,$url_bitly[2]);
+				$self->privmsg("$channel","$nick links to $url_bitly[2] \| $desc");
+				last;
+			}
+		}
+	}

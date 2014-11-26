@@ -1,0 +1,20 @@
+	if ($message[0] eq "~roll"){
+		if ($message[1] > 10) { $self->notice("$channel","Maximum is 10 dice.");}
+		else {
+			for (my $i = 0; $i < $message[1]; $i++) {
+				my $lower=1;
+				my $upper=$message[2];
+				my $random = int(rand( $upper-$lower+1 ) ) + $lower;
+				$self->notice("$channel", "$nick rolls: $random");
+			}
+		}
+	}
+	if ($message[0] eq "~does-it-blend"){
+		shift(@message);
+		my $blender = join(" ", @message);
+		my $lower=1;
+		my $upper=6;
+		my $random = int(rand( $upper-$lower+1 ) ) + $lower;
+		if ($random > 3) { $self->notice("$channel", "$blender blends!"); }
+		else { $self->notice("$channel", "$blender doesn\'t blend..."); }
+	}

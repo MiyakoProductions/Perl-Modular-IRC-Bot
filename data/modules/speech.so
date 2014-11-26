@@ -1,0 +1,95 @@
+	if (/(?i)meruru/ ~~ @message) {
+		my $file = 'data/lib/meruru.lib'; # Quote File
+		open(FILE,$file);
+		my @lines = <FILE>;
+		my $arraysize = scalar(@lines);
+		my $line = $lines[rand($arraysize)];
+		my $response = $line;
+		$response =~ s/<nick>/$nick/g;
+		$self->privmsg("$channel","$response");
+		close($file);
+		last;
+	}
+	if (/(?i)$mynick/ ~~ @message) {
+		my $file = 'data/lib/ruri.lib'; # Quote File
+		open(FILE,$file);
+		my @lines = <FILE>;
+		my $arraysize = scalar(@lines);
+		my $line = $lines[rand($arraysize)];
+		my $response = $line;
+		$response =~ s/<nick>/$nick/g;
+		$self->privmsg("$channel","$response");
+		close($file);
+		last;
+	}
+	elsif (/るりねこ/ ~~ @message) {
+		my $file = 'data/lib/ruri.lib'; # Quote File
+		open(FILE,$file);
+		my @lines = <FILE>;
+		my $arraysize = scalar(@lines);
+		my $line = $lines[rand($arraysize)];
+		my $response = $line;
+		$response =~ s/<nick>/$nick/g;
+		$self->privmsg("$channel","$response");
+		close($file);
+		last;
+	}
+	if ($message[0] eq "~quote"){
+		if ($message[1] eq "lib"){
+			if ($message[2] eq "") { $self->notice("$channel","Current quote library: $quotelib"); }
+			elsif (-e "data/lib/$message[2].lib") {
+				my $newlib = "$message[2]";
+				$quotelib = "data/lib/$newlib.lib";
+				$self->notice("$channel","Loaded quote library: $quotelib");
+			}
+			else { $self->notice("$channel","Library File Not Found!"); }
+		}
+		elsif ($message[1] eq 'list'){
+			my @libs = <./data/lib/*.lib>;
+			$self->privmsg("$channel","@libs");
+		}
+		elsif ( $quotelib eq "" ) { $self->notice("$channel","No library loaded."); }
+		else{
+			if (-e "$quotelib") {
+				my $file = "$quotelib";
+				open(FILE,$file);
+				my @lines = <FILE>;
+				my $arraysize = scalar(@lines);
+				my $line = $lines[rand($arraysize)];
+				$self->privmsg("$channel","$line");
+				close($file);
+			}
+			else { $self->notice("$channel","Library File Not Found!"); }
+		}
+	}
+	if ($message[0] eq "~slap") {
+		if (-e $slaplib) {
+			my $lower=1;
+			my $upper=100;
+			my $random = int(rand( $upper-$lower+1 ) ) + $lower;
+			my $file = "$slaplib"; # Quote File
+			open(FILE,$file);
+			my @lines = <FILE>;
+			my $arraysize = scalar(@lines);
+			my $line = $lines[rand($arraysize)];
+			my $response = $line;
+			$response =~ s/<nick>/$nick/g;
+			$response =~ s/<target>/$message[1]/g;
+			$response =~ s/<rand>/$random/g;
+			$self->me("$channel","$response");
+			close($file);
+		}
+		else { $self->notice("$channel","Library File Not Found!"); }
+	}
+	if ($message[0] eq "~nya"){
+			if (-e "data/lib/nya.lib") {
+				my $file = "data/lib/nya.lib";
+				open(FILE,$file);
+				my @lines = <FILE>;
+				my $arraysize = scalar(@lines);
+				my $line = $lines[rand($arraysize)];
+				$self->privmsg("$channel","$line");
+				close($file);
+			}
+			else { $self->notice("$channel","Library File Not Found!"); }
+	}

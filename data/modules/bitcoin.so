@@ -1,0 +1,147 @@
+my $wallet_id = "";
+my $wallet_pass = "";
+
+	if ($message[0] eq "~donate") {
+		$self->privmsg("$channel","BTC: 1NEEToZe35MxSLQY7cA6e6tx6BkoiDzTbK | PayPal: kitsune94\@gmail.com");
+	}
+	if ($message[0] eq "~balance"){
+		my $balurl = "https://blockchain.info/merchant/$wallet_id/balance?password=$wallet_pass"; 
+		my $usdurl = "https://btc-e.com/api/2/btc_usd/ticker";
+		my $ltcurl = "https://btc-e.com/api/2/ltc_btc/ticker"; 
+		my $ftcurl = "https://btc-e.com/api/2/ftc_btc/ticker";
+		my $nmcurl = "https://btc-e.com/api/2/nmc_btc/ticker";  
+		my $m = WWW::Mechanize->new();
+		$m->get($balurl);
+		my $balc = $m->content;
+		my $decoded_balance = decode_json( $balc );
+		my $balance = $decoded_balance->{'balance'}; # Json decodes to an arrayref number instead of an array.
+		$balance = ($balance / 100000000);
+		$balance = sprintf ("%.8f", $balance);
+		$m->get($usdurl);
+		my $usdc = $m->content;
+		my $decoded_json = decode_json( $usdc );
+		my $ticker = $decoded_json->{'ticker'}; 
+		my $usd = ($balance * $ticker->{'sell'});
+		$usd = sprintf ("%.2f", $usd);
+		$m->get($ltcurl);
+		my $ltcc = $m->content;
+		my $decoded_ltc = decode_json( $ltcc );
+		my $ltcticker = $decoded_ltc->{'ticker'}; 
+		my $ltc = ($balance / $ltcticker->{'buy'});
+		$ltc = sprintf ("%.8f", $ltc);
+		$m->get($ftcurl);
+		my $ftcc = $m->content;
+		my $decoded_ftc = decode_json( $ftcc );
+		my $ftcticker = $decoded_ftc->{'ticker'}; 
+		my $ftc = ($balance / $ftcticker->{'buy'});
+		$ftc = sprintf ("%.8f", $ftc);
+		$m->get($nmcurl);
+		my $nmcc = $m->content;
+		my $decoded_nmc = decode_json( $nmcc );
+		my $nmcticker = $decoded_nmc->{'ticker'}; 
+		my $nmc = ($balance / $nmcticker->{'buy'});
+		$nmc = sprintf ("%.8f", $nmc);
+		$self->privmsg("$channel","Balace : $balance BTC, $usd\$ USD, $nmc NMC, $ltc LTC, $ftc FTC");
+	}
+	if ($message[0] eq "~btc-e") {
+		my $mech = WWW::Mechanize->new();
+		$mech->stack_depth(0);
+		my $nonce = time;
+		my $url = "https://btc-e.com/tapi";
+		my $data = "method=getInfo&nonce=".$nonce;
+		my $hash = hmac_sha512_hex($data,$btcesecret);
+		$mech->add_header('Key' => $btcekey);
+		$mech->add_header('Sign' => $hash);
+		$mech->post($url, ['method' => 'getInfo', 'nonce' => time]);
+		my $json=decode_json($mech->content());
+		my $return = $json->{'return'};
+		my $funds=$return->{'funds'};
+		$self->privmsg("$channel","Account Balances => BTC: $funds->{'btc'} NMC: $funds->{'nmc'} USD: $funds->{'usd'} LTC: $funds->{'ltc'} FTC: $funds->{'ftc'}\n");	
+	}
+	if ($message[0] eq "~miner") {
+		my $url = "https://www.btcguild.com/api.php?api_key=";  
+		my $m = WWW::Mechanize->new();
+		$m->get($url);
+		my $stats = $m->content;
+		my $decoded_stats = decode_json( $stats );
+		$decoded_stats = $decoded_stats->{'user'};
+		my $total_reward = $decoded_stats->{'total_reward'}; # Json decodes to an arrayref number instead of an array.
+		$self->privmsg("$channel","Mined: $total_reward");
+	}
+	if ($message[0] eq "~info"){
+		my $diffurl = "https://blockchain.info/q/getdifficulty";
+		my $blkcnturl = "https://blockchain.info/q/getblockcount";
+		my $perblkurl = "https://blockchain.info/q/bcperblock";
+		my $etaurl = "https://blockchain.info/q/eta";
+		my $totalurl = "https://blockchain.info/q/totalbc";
+		my $hashurl = "https://blockchain.info/q/hashrate";
+		my $m = WWW::Mechanize->new();
+		$m->get($diffurl);
+		my $diff = $m->content;
+		$m->get($blkcnturl);
+		my $blocks = $m->content;
+		$m->get($perblkurl);
+		my $perblock = $m->content;
+		$m->get($totalurl);
+		my $totalbtc = $m->content;
+		$m->get($etaurl);
+		my $eta = $m->content;
+		$m->get($hashurl);
+		my $hash = $m->content;
+		$diff = ($diff / 1000000);
+		$diff = sprintf ("%.2f", $diff);
+		$perblock = ($perblock / 100000000);
+		$totalbtc = ($totalbtc / 100000000);
+		$eta = sprintf ("%.2f", $eta);
+		$hash = ($hash / 1000000);
+		$hash = sprintf ("%.2f", $hash);
+		$self->privmsg("$channel","Diff: $diff M | Blocks: $blocks | Reward: $perblock | Total: $totalbtc BTC | Hashrate: $hash PH/s| Est. next block: $eta seconds");
+	}
+	if ($message[0] eq "~lookup") {
+		my $balurl = "https://blockchain.info/q/addressbalance/$message[1]";
+		my $senturl = "https://blockchain.info/q/getsentbyaddress/$message[1]";
+		my $recvurl = "https://blockchain.info/q/getreceivedbyaddress/$message[1]";
+		my $m = WWW::Mechanize->new();
+		$m->get($balurl);
+		my $bal = $m->content;
+		$bal = ($bal / 100000000);
+		$bal = sprintf ("%.8f", $bal);
+		$m->get($senturl);
+		my $sent = $m->content;
+		$sent = ($sent / 100000000);
+		$sent = sprintf ("%.8f", $sent);
+		$m->get($recvurl);
+		my $recv = $m->content;
+		$recv = ($recv / 100000000);
+		$recv = sprintf ("%.8f", $recv);
+		$self->privmsg("$channel","Balance: $bal | Total Sent: $sent | Total Recieved: $recv");
+	} 
+ 	if ($message[0] eq "~ticker"){
+		if ($message[1] eq "ltc") {
+			my $turl = "https://btc-e.com/api/2/ltc_btc/ticker"; 
+			my $m = WWW::Mechanize->new();
+			$m->get($turl);
+			my $c = $m->content;
+			my $decoded_json = decode_json( $c );
+			my $ticker = $decoded_json->{'ticker'}; # Json decodes to an arrayref number instead of an array.
+			$self->privmsg("$channel","LTC : $ticker->{'avg'} BTC");	
+		}
+		elsif ($message[1] eq "ftc") {
+			my $turl = "https://btc-e.com/api/2/ftc_btc/ticker"; 
+			my $m = WWW::Mechanize->new();
+			$m->get($turl);
+			my $c = $m->content;
+			my $decoded_json = decode_json( $c );
+			my $ticker = $decoded_json->{'ticker'}; # Json decodes to an arrayref number instead of an array.
+			$self->privmsg("$channel","FTC : $ticker->{'avg'} BTC");	
+		}
+		else {
+			my $turl = "https://btc-e.com/api/2/btc_usd/ticker"; 
+			my $m = WWW::Mechanize->new();
+			$m->get($turl);
+			my $c = $m->content;
+			my $decoded_json = decode_json( $c );
+			my $ticker = $decoded_json->{'ticker'}; # Json decodes to an arrayref number instead of an array.
+			$self->privmsg("$channel","BTC : $ticker->{'avg'} USD");
+		}
+	}

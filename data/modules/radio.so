@@ -1,0 +1,23 @@
+if ($message[0] eq "~radio") {
+	if ($message[1] eq "skip") {
+		$self->notice("$channel","Skipping song...");
+		system "mpc next -q";
+	}
+	elsif ($message[1] eq "next") {
+		$self->notice("$channel","Skipping song...");
+		system "mpc next -q";
+	}
+	else {
+		my $url = "http://otomiko.brb.dj:8000/json.xsl";
+		my $m = WWW::Mechanize->new();
+		$m->get($url);
+		my $c = $m->content;
+		my $decoded_json = decode_json( $c );
+		$decoded_json = $decoded_json->{'mounts'};
+		$decoded_json = $decoded_json->{'/otomiko.mp3'};
+		my $now_playing = $decoded_json->{'title'};
+
+#		print "Currently Playing: $now_playing";
+		$self->notice("$channel","Currently Playing: $now_playing\n");
+	}
+}

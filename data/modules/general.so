@@ -1,0 +1,14 @@
+	if ($message[0] eq "~rules") {
+        	$self->notice($nick, "╔════════════════════════════════╗");
+        	$self->notice($nick, "║ Cafe Rules:                    ║");
+        	$self->notice($nick, "║  In this cafe there will be no ║");
+        	$self->notice($nick, "║  discrimination between humans ║");
+        	$self->notice($nick, "║  and androids.                 ║");
+        	$self->notice($nick, "║                          ~Nagi ║");
+        	$self->notice($nick, "╚════════════════════════════════╝");
+	}
+	if ($message[0] eq "~time") {
+		my $itime = beattime(time());
+		my @time = split(/ /, localtime());
+		$self->notice("$channel","Current time is \@$itime || $time[3] UTC -8");
+	}
